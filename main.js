@@ -1,5 +1,5 @@
 const express = require("express");
-const { addBlogData, getBlogData, deleteBlog, authUser} = require("./dbController.js");
+const { addBlogData, getBlogData, deleteBlog,getBlogPublic, authUser,getBlogPublicSpecific} = require("./dbController.js");
 require("dotenv").config();
 var cors = require("cors");
 const app = express();
@@ -23,6 +23,19 @@ app.post("/authUser",(req, res)=>{
 app.get("/getBlog/:user", (req, res) => {
   console.log("get data of", req.params);
   getBlogData(res, req.params);
+});
+//Api for Public Blog Data
+app.get('/getBlogPublic',(req,res)=>{
+  console.log("getBlogPublic Called");
+  getBlogPublic(res,req).catch(console.dir)
+  
+});
+
+//Api for specific Public Blog Data
+app.get('/getBlogPublicSpecific/:uid',(req,res)=>{
+  console.log("getBlogPublicSpecific Called");
+  getBlogPublicSpecific(res,req).catch(console.dir)
+  
 });
 
 // Api for post the blog by the user

@@ -1,7 +1,11 @@
 const { MongoClient } = require("mongodb");
-require("dotenv").config();
-const uri = process.env.DB_URI;
 
+require("dotenv").config();
+
+// const { Cursor } = require("mongodb/lib/core"); 
+const uri = process.env.DB_URI;
+const client = new MongoClient(uri,  { useUnifiedTopology: true });
+var ObjectId = require('mongodb').ObjectId;
 // function for authorizing the user
 function authUser(res, reqBody) {
     MongoClient.connect(uri, { useUnifiedTopology: true }, (err, db) => {
@@ -183,6 +187,79 @@ function deleteBlog(res, reqBody) {
     );
 }
 
+//Function for public blog data
+// function getBlogPublic(res, reqParams) {
+//     MongoClient.connect(
+//         uri,
+//         {
+//             useUnifiedTopology: true,
+//         },
+//         (err, db) => {
+//             if (err){
+//                 console.error(err);
+//                 db.close();
+//             }
+//             var dbo = db.db("Blogs");
+
+           
+//                 dbo.collection("BlogsData").find({$limit:10}, (err, result) => {
+//                     if (err) throw err;
+//                     if (result) {
+//                         const response = CircularJSON.stringify(result);
+//                         res.send(response);
+//                         console.log(result);
+//                     } else {
+//                         res.send("Some error in getBlogPublic")
+//                     }
+//                     db.close();
+
+//                     console.log("getBlogPublic db closed");
+//                 });
+            
+//         }
+//     );
+// }
+
+async function getBlogPublic(res,req){
+    try{
+        await client.connect();
+
+        const db = client.db("Blogs")
+        const coll = db.collection('BlogsData')
+
+        const cursor = coll.find({}).limit(10)
+        
+         const data = await cursor.toArray()
+         if(data){
+            res.send(JSON.stringify(data))
+         }
+       
+    } finally {
+    //   await client.close()
+    }
+}
+
+
+async function getBlogPublicSpecific(res,req){
+    try{
+        await client.connect();
+        console.log(req.params.uid);
+        var o_id = new ObjectId(req.params.uid);
+        const db = client.db("Blogs")
+        const coll = db.collection('BlogsData')
+
+        const data = await coll.findOne({_id:o_id},{projection:{_id:1,content:1}})
+        
+        
+         if(data){
+            res.send(JSON.stringify(data))
+         }
+       
+    } finally {
+    //   await client.close()
+    }
+}
+
 // const client = new MongoClient(uri, {
 //     useUnifiedTopology: true
 // });
@@ -279,4 +356,6 @@ module.exports = {
     getBlogData,
     deleteBlog,
     authUser,
+    getBlogPublic,
+    getBlogPublicSpecific
 };
