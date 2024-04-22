@@ -2,189 +2,195 @@ const { MongoClient } = require("mongodb");
 
 require("dotenv").config();
 
-// const { Cursor } = require("mongodb/lib/core"); 
+// const { Cursor } = require("mongodb/lib/core");
 const uri = process.env.DB_URI;
-const client = new MongoClient(uri,  { useUnifiedTopology: true });
-var ObjectId = require('mongodb').ObjectId;
+const client = new MongoClient(uri, { useUnifiedTopology: true });
+var ObjectId = require("mongodb").ObjectId;
 // function for authorizing the user
 function authUser(res, reqBody) {
-    MongoClient.connect(uri, { useUnifiedTopology: true }, (err, db) => {
-        if (err){
-            console.error(err);
-            db.close();
-        }
-        
-        var dbo = db.db("Blogs");
-        
-        const { userName, password } = reqBody;
-        const query = { $and: [{ userName }, { password }] };
-        
-        if (reqBody) {
-            dbo.collection("Blog").findOne(query, (err, result) => {
-                if (err) throw err;
-                if (result) {
-                    // const response = JSON.stringify(result);
-                    res.send("authorized");
-                    console.log("authorized successfully");
-                } else {
-                    console.log("user not found");
-                    res.send("user not found")
+  MongoClient.connect(uri, { useUnifiedTopology: true }, (err, db) => {
+    if (err) {
+      console.error(err);
+      db.close();
+    }
 
-                }
-                db.close();
-                console.log("authUser closed");
-            });
+    var dbo = db.db("Blogs");
+
+    const { userName, password } = reqBody;
+    const query = { $and: [{ userName }, { password }] };
+
+    if (reqBody) {
+      dbo.collection("Blog").findOne(query, (err, result) => {
+        if (err) throw err;
+        if (result) {
+          // const response = JSON.stringify(result);
+          res.send("authorized");
+          console.log("authorized successfully");
+        } else {
+          console.log("user not found");
+          res.send("user not found");
         }
-    });
+        db.close();
+        console.log("authUser closed");
+      });
+    }
+  });
 }
 
 function getBlogData(res, reqParams) {
-    MongoClient.connect(
-        uri,
-        {
-            useUnifiedTopology: true,
-        },
-        (err, db) => {
-            if (err){
-                console.error(err);
-                db.close();
-            }
-            var dbo = db.db("Blogs");
+  MongoClient.connect(
+    uri,
+    {
+      useUnifiedTopology: true,
+    },
+    (err, db) => {
+      if (err) {
+        console.error(err);
+        db.close();
+      }
+      var dbo = db.db("Blogs");
 
-            const query = {
-                userName: reqParams.user,
-            };
+      const query = {
+        UserName: reqParams.user,
+      };
 
-            if (reqParams) {
-                dbo.collection("Blog").findOne(query, (err, result) => {
-                    if (err) throw err;
-                    if (result) {
-                        const response = JSON.stringify(result);
-                        res.send(response);
-                        console.log(result);
-                    } else {
-                        res.send("user not found")
-                    }
-                    db.close();
+      if (reqParams) {
+        dbo.collection("BlogsData").findOne(query, (err, result) => {
+          if (err) throw err;
+          if (result) {
+            const response = JSON.stringify(result);
+            res.send(response);
+            console.log(result);
+          } else {
+            res.send("user not found");
+          }
+          db.close();
 
-                    console.log("getBlogData db closed");
-                });
-            }
-        }
-    );
+          console.log("getBlogData db closed");
+        });
+      }
+    }
+  );
 }
 
 function addBlogData(res, reqBody) {
-    MongoClient.connect(
-        uri,
-        {
-            useUnifiedTopology: true,
-        },
-        (err, db) => {
-            if (err){
-                console.error(err);
-                db.close();
-            }
-            var dbo = db.db("Blogs");
+  MongoClient.connect(
+    uri,
+    {
+      useUnifiedTopology: true,
+    },
+    (err, db) => {
+      if (err) {
+        console.error(err);
+        db.close();
+      }
+      var dbo = db.db("Blogs");
 
-            // date object
-            const date = new Date();
-            // find Query
-            const findquery = {
-                userName: reqBody.userName,
-            };
-            //update query
-            const update = {
-                $push: {
-                    BlogText: {
-                        Text: reqBody.BlogText,
-                        date,
-                    },
-                },
-            };
-            //insert query if user not exits
-            // const insertUser = {
-            //     userName: reqBody.userName,
-            //     BlogText: [
-            //         {
-            //             Text: reqBody.BlogText,
-            //             date,
-            //         },
-            //     ],
-            // };
+      // date object
+      //   const date = new Date();
+      // find Query
+      //   const findquery = {
+      //     UserName: reqBody.userName,
+      //   };
+      //update query
+      // const update = {
+      //     $push: {
+      //        content:reqBody.BlogText,
+      //     },
+      // };
+      //insert query if user not exits
+      // const insertUser = {
+      //     userName: reqBody.userName,
+      //     BlogText: [
+      //         {
+      //             Text: reqBody.BlogText,
+      //             date,
+      //         },
+      //     ],
+      // };
 
-            if (reqBody.BlogText) {
-                dbo.collection("Blog").findOne(findquery, (err, result) => {
-                    if (err) throw err;
-                    if (result) {
-                        dbo.collection("Blog")
-                            .updateOne(findquery, update, (err, result) => {
-                                if (err) throw err;
-                                if (result) {
-                                    console.log("posted");
-                                    res.send("posted");
-                                } else {
-                                    console.log("user not found");
-                                }
+      if (reqBody) {
+        dbo.collection("BlogsData").insertOne(reqBody, (err, result) => {
+          if (err) throw err;
+          if (result) {
+            console.log("posted");
+            res.send("posted");
+            db.close();
+            console.log("update db Closed");
+          } else {
+            console.log("user not found");
+            db.close();
+            console.log("update db Closed");
+          }
+        });
 
-                                db.close();
-                                console.log("update db Closed");
-                            });
+        // dbo.collection("BlogsData").findOne(findquery, (err, result) => {
+        //     if (err) throw err;
+        //     if (result) {
+        //         dbo.collection("BlogsData")
+        //             .updateOne(findquery, update, (err, result) => {
+        //                 if (err) throw err;
+        //                 if (result) {
+        //                     console.log("posted");
+        //                     res.send("posted");
+        //                 } else {
+        //                     console.log("user not found");
+        //                 }
 
-                          
-                           
-                    }
-                });
+        //                 db.close();
+        //                 console.log("update db Closed");
+        //             });
 
-                
-            }
-        }
-    );
+        //     }
+        // });
+      }
+    }
+  );
 }
 
 // function for deletion of blog
 
 function deleteBlog(res, reqBody) {
-    MongoClient.connect(
-        uri,
-        {
-            useUnifiedTopology: true,
+  MongoClient.connect(
+    uri,
+    {
+      useUnifiedTopology: true,
+    },
+    (err, db) => {
+      if (err) {
+        console.error(err);
+        db.close();
+      }
+      var dbo = db.db("Blogs");
+
+      const { userName, BlogText } = reqBody;
+
+      const query = { userName };
+
+      const { Text } = BlogText;
+      console.log(Text);
+
+      const pullQuery = {
+        $pull: {
+          BlogText: {
+            Text,
+          },
         },
-        (err, db) => {
-            if (err){
-                console.error(err);
-                db.close();
-            }
-            var dbo = db.db("Blogs");
+      };
 
-            const { userName, BlogText } = reqBody;
-
-            const query = { userName };
-
-            const { Text } = BlogText;
-            console.log(Text);
-
-            const pullQuery = {
-                $pull: {
-                    BlogText: {
-                        Text,
-                    },
-                },
-            };
-
-            if (reqBody) {
-                dbo.collection("Blog").updateOne(query, pullQuery, (err, result) => {
-                    if (err) throw err;
-                    if (result) {
-                        res.send("deleted");
-                        console.log("deleted");
-                    }
-                    db.close();
-                    console.log("deleteBlog db closed");
-                });
-            }
-        }
-    );
+      if (reqBody) {
+        dbo.collection("Blog").updateOne(query, pullQuery, (err, result) => {
+          if (err) throw err;
+          if (result) {
+            res.send("deleted");
+            console.log("deleted");
+          }
+          db.close();
+          console.log("deleteBlog db closed");
+        });
+      }
+    }
+  );
 }
 
 //Function for public blog data
@@ -201,7 +207,6 @@ function deleteBlog(res, reqBody) {
 //             }
 //             var dbo = db.db("Blogs");
 
-           
 //                 dbo.collection("BlogsData").find({$limit:10}, (err, result) => {
 //                     if (err) throw err;
 //                     if (result) {
@@ -215,54 +220,52 @@ function deleteBlog(res, reqBody) {
 
 //                     console.log("getBlogPublic db closed");
 //                 });
-            
+
 //         }
 //     );
 // }
 
-async function getBlogPublic(res,req){
-    try{
-        await client.connect();
+async function getBlogPublic(res, req) {
+  try {
+    await client.connect();
 
-        const db = client.db("Blogs")
-        const coll = db.collection('BlogsData')
+    const db = client.db("Blogs");
+    const coll = db.collection("BlogsData");
 
-        const cursor = coll.find({}).limit(10)
-        
-         const data = await cursor.toArray()
-         if(data){
-            res.send(JSON.stringify(data))
-         }
-       
-    } finally {
-    //   await client.close()
+    const cursor = coll.find({}).limit(10);
+
+    const data = await cursor.toArray();
+    if (data) {
+      res.send(JSON.stringify(data));
     }
+  } finally {
+    //   await client.close()
+  }
 }
 
+async function getBlogPublicSpecific(res, req) {
+  try {
+    const client = new MongoClient(uri, {
+      useUnifiedTopology: true,
+    });
+    await client.connect();
+    console.log(req.params.uid);
+    var o_id = new ObjectId(req.params.uid);
+    const db = client.db("Blogs");
+    const coll = db.collection("BlogsData");
 
-async function getBlogPublicSpecific(res,req){
-    try{
-        await client.connect();
-        console.log(req.params.uid);
-        var o_id = new ObjectId(req.params.uid);
-        const db = client.db("Blogs")
-        const coll = db.collection('BlogsData')
+    const data = await coll.findOne(
+      { _id: o_id },
+      { projection: { _id: 1, content: 1 } }
+    );
 
-        const data = await coll.findOne({_id:o_id},{projection:{_id:1,content:1}})
-        
-        
-         if(data){
-            res.send(JSON.stringify(data))
-         }
-       
-    } finally {
-    //   await client.close()
+    if (data) {
+      res.send(JSON.stringify(data));
     }
+  } finally {
+    //   await client.close()
+  }
 }
-
-// const client = new MongoClient(uri, {
-//     useUnifiedTopology: true
-// });
 
 // async function for add posts
 // async function addData(res, reqBody) {
@@ -352,10 +355,10 @@ async function getBlogPublicSpecific(res,req){
 // }
 
 module.exports = {
-    addBlogData,
-    getBlogData,
-    deleteBlog,
-    authUser,
-    getBlogPublic,
-    getBlogPublicSpecific
+  addBlogData,
+  getBlogData,
+  deleteBlog,
+  authUser,
+  getBlogPublic,
+  getBlogPublicSpecific,
 };
