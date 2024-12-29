@@ -227,6 +227,9 @@ function deleteBlog(res, reqBody) {
 
 async function getBlogPublic(res, req) {
   try {
+    const client = new MongoClient(uri, {
+      useUnifiedTopology: true,
+    });
     await client.connect();
 
     const db = client.db("Blogs");
