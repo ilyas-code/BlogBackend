@@ -55,7 +55,7 @@ function getBlogData(res, reqParams) {
       };
 
       if (reqParams) {
-        dbo.collection("BlogsData").findOne(query, (err, result) => {
+        dbo.collection("BlogsData").find(query).toArray((err, result) => {
           if (err) throw err;
           if (result) {
             const response = JSON.stringify(result);
@@ -258,12 +258,37 @@ async function getBlogPublicSpecific(res, req) {
     const coll = db.collection("BlogsData");
 
     const data = await coll.findOne(
-      { _id: o_id },
-      { projection: { _id: 1, content: 1 } }
+      { _id: o_id }
+      // { projection: { _id: 1, content: 1 } }
     );
 
     if (data) {
       res.send(JSON.stringify(data));
+    }
+  } finally {
+    //   await client.close()
+  }
+}
+
+async function getBlogUserSpecific(res, req) {
+  try {
+    const client = new MongoClient(uri, {
+      useUnifiedTopology: true,
+    });
+    await client.connect();
+    console.log(req.params.uid);
+    var o_id = new ObjectId(req.params.uid);
+    const db = client.db("Blogs");
+    const coll = db.collection("BlogsData");
+
+    const data = await coll.findOne(
+      { _id: o_id },
+      
+    );
+
+    if (data) {
+      res.send(JSON.stringify(data));
+      console.log(data);
     }
   } finally {
     //   await client.close()
@@ -364,4 +389,5 @@ module.exports = {
   authUser,
   getBlogPublic,
   getBlogPublicSpecific,
+  getBlogUserSpecific,
 };
